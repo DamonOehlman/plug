@@ -14,22 +14,27 @@ util.inherits(Plugger, events.EventEmitter);
 Plugger.prototype.drop = function(pluginName) {
     var activePlugin = this.activePlugins[pluginName],
         loader = this;
-
+        
     // if the plugin is already loaded, then drop it
     if (activePlugin) {
+        var dropActions = [];
+        
         debug('active plugin found for "' + pluginName + '", attempting drop');
-        if (activePlugin.drop) {
-            var dropActions = activePlugin.drop.apply(null, this.args);
-            this.emit('drop', activePlugin, dropActions);
-            
-            // iterate through the drop actions and fire events for each action
-            dropActions.forEach(function(actionData) {
-                if (actionData.action) {
-                    loader.emit(actionData.action, actionData);
-                }
-            });
+        if (activePlugin.module.drop) {
+            dropActions = activePlugin.module.drop.apply(null, this.args);
         }
         
+        // emit the drop event
+        this.emit('drop', pluginName, activePlugin, dropActions);
+        
+        // iterate through the drop actions and fire events for each action
+        dropActions.forEach(function(actionData) {
+            if (actionData.action) {
+                loader.emit(actionData.action, actionData);
+            }
+        });
+
+        // delete the active plugin
         delete this.activePlugins[pluginName];
     }
 };
@@ -69,7 +74,11 @@ Plugger.prototype.load = function(modulePath) {
             loader.drop(pluginName);
             
             // update the active plugins
-            loader.activePlugins[pluginName] = plugin;
+            loader.activePlugins[pluginName] = {
+                data: pluginData,
+                module: plugin,
+                path: modulePath
+            };
             
             // emit the connect event
             loader.emit('connect', pluginName, pluginData || {}, modulePath);
