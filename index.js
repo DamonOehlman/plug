@@ -67,12 +67,9 @@ Plugger.prototype.load = function(modulePath) {
         // log plugin load error
     }
     
-    if (plugin) {
+    if (plugin && plugin.connect) {
         // add the callback to the connect args
         connectArgs = this.args.concat(function(pluginData) {
-            // drop the existing plugin if it exists
-            loader.drop(pluginName);
-            
             // update the active plugins
             loader.activePlugins[pluginName] = {
                 data: pluginData,
@@ -84,6 +81,9 @@ Plugger.prototype.load = function(modulePath) {
             loader.emit('connect', pluginName, pluginData || {}, modulePath);
         });
         
+        // drop the existing plugin if it exists
+        loader.drop(pluginName, plugin);
+
         // call the connect method
         plugin.connect.apply(null, connectArgs);
     }

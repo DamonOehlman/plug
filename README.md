@@ -6,7 +6,7 @@ Plug is a very simple plugin system for Node.js.  It has minimal dependencies an
 
 - Plugins are node modules that export a `connect` and `drop` function.
 - Each `Plugger` manages a list of active plugins, which are unique by name.
-- In the event that a plugin with the same name as an existing plugin is loaded into a Plugger scope, the old plugin is __dropped__ if the new plugin is successfully __connected__.
+- In the event that a plugin with the same name as an existing plugin is loaded into a Plugger scope, the old plugin is __dropped__ before the new plugin is __connected__.
 
 ## Installing
 
