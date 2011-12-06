@@ -1,0 +1,29 @@
+{
+    "name": "plug",
+    "description": "Simple plugin system with minimal dependencies",
+    "author": "Damon Oehlman <damon.oehlman@sidelab.com>",
+    "tags": ["plugin"],
+    "version": "0.0.1",
+    
+    "main": "index.js",
+    "engines": { "node": ">= 0.4.x < 0.7.0" },
+        
+    "dependencies": {
+        "debug": "*"
+    },
+    
+    "devDependencies": {
+    },
+    
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/DamonOehlman/plug.git"
+    },
+    
+    "bugs": {
+        "url": "http://github.com/DamonOehlman/plug/issues"
+    },
+    
+    "contributors": [
+    ]
+}
