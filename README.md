@@ -15,6 +15,7 @@ When a new plugin is found, the `connect` function for the plugin is called with
 In the following example, for instance, a Plugger is created taking a name and age argument:
 
 `examples/simple-loader.js`:
+
 ```js
 var path = require('path'),
     plugger = require('plug').create('Bob', 36);
@@ -30,6 +31,7 @@ plugger.find(path.resolve(__dirname, 'plugins/a'));
 When plugins are later connected, these arguments are passed through to the plugin's connect function along with a callback.  The callback is responsible for returning _pluginData_ to the plugger, and all of this information is passed through when a `connect` event is emitted:
 
 `plugins/a/first.js`:
+
 ```
 exports.connect = function(name, age, callback) {
 	console.log('I belong to ' + name);
