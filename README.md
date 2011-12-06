@@ -60,6 +60,10 @@ loaded plugin "first", with data:  { sport: 'Fishing' }
 
 To be completed.
 
+### Using Drop Actions
+
+To be completed.
+
 ## Other Node Plugin Systems
 
 - [haba](https://github.com/crcn/haba)
