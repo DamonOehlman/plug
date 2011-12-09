@@ -3,7 +3,7 @@
     "description": "Simple plugin system with minimal dependencies",
     "author": "Damon Oehlman <damon.oehlman@sidelab.com>",
     "tags": ["plugin"],
-    "version": "0.0.3",
+    "version": "0.0.4",
     
     "main": "index.js",
     "engines": { "node": ">= 0.4.x < 0.7.0" },

@@ -21,7 +21,10 @@ Plugger.prototype.drop = function(pluginName) {
         
         debug('active plugin found for "' + pluginName + '", attempting drop');
         if (activePlugin.module.drop) {
-            dropActions = activePlugin.module.drop.apply(null, this.args);
+            dropActions = activePlugin.module.drop.apply(null, this.args) || [];
+            if (! Array.isArray(dropActions)) {
+                dropActions = [dropActions];
+            }
         }
         
         // emit the drop event
