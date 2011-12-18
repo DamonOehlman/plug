@@ -6,4 +6,4 @@ plugger.on('connect', function(pluginName, pluginData, modulePath) {
     console.log('loaded plugin "' + pluginName + '", with data: ', pluginData);
 });
 
-plugger.find(path.resolve(__dirname, 'plugins/a'));
+plugger.find(path.resolve(__dirname, 'plugins/b'));

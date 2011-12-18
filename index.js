@@ -56,7 +56,7 @@ Plugger.prototype.find = function(pluginPath) {
 Plugger.prototype.load = function(modulePath) {
     // grab the base name of the plugin
     var pluginName = path.basename(modulePath, '.js'),
-        plugin, connectArgs,
+        plugin, connectArgs = this.args,
         loader = this;
     
     debug('loading plugin "' + pluginName + '" from: ' + modulePath);
@@ -71,24 +71,35 @@ Plugger.prototype.load = function(modulePath) {
     }
     
     if (plugin && plugin.connect) {
-        // add the callback to the connect args
-        connectArgs = this.args.concat(function(pluginData) {
-            // update the active plugins
-            loader.activePlugins[pluginName] = {
-                data: pluginData,
-                module: plugin,
-                path: modulePath
-            };
-            
-            // emit the connect event
-            loader.emit('connect', pluginName, pluginData || {}, modulePath);
-        });
+        var haveCallback = plugin.connect.length > this.args.length,
+            connectResult;
+        
+        // if the function has a callback parameter, then append the callback arg
+        if (haveCallback) {
+            // add the callback to the connect args
+            connectArgs = this.args.concat(function(pluginData) {
+                // update the active plugins
+                loader.activePlugins[pluginName] = {
+                    data: pluginData,
+                    module: plugin,
+                    path: modulePath
+                };
+
+                // emit the connect event
+                loader.emit('connect', pluginName, pluginData || connectResult || {}, modulePath);
+            });
+        } 
         
         // drop the existing plugin if it exists
         loader.drop(pluginName, plugin);
 
         // call the connect method
-        plugin.connect.apply(null, connectArgs);
+        connectResult = plugin.connect.apply(null, connectArgs);
+
+        // if we didn't have a callback, then emit the connect event
+        if (! haveCallback) {
+            loader.emit('connect', pluginName, connectResult || {}, modulePath);
+        }
     }
 };
 
