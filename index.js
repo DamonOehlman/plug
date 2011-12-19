@@ -11,15 +11,29 @@ var Plugger = exports.Plugger = function() {
 
 util.inherits(Plugger, events.EventEmitter);
 
+Plugger.prototype.activate = function(pluginName, plugin, modulePath, data) {
+    // update the active plugins
+    this.activePlugins[pluginName] = {
+        data: data,
+        module: plugin,
+        path: modulePath
+    };
+
+    // emit the connect event
+    debug('!! CONNECT: plugin "' + pluginName + '" load fired callback, completed');
+    this.emit('connect', pluginName, data || {}, modulePath);
+};
+
 Plugger.prototype.drop = function(pluginName) {
     var activePlugin = this.activePlugins[pluginName],
         loader = this;
         
     // if the plugin is already loaded, then drop it
+    debug('check if drop required for plugin: ' + pluginName);
     if (activePlugin) {
         var dropActions = [];
         
-        debug('active plugin found for "' + pluginName + '", attempting drop');
+        debug('!! DROP: active plugin found for "' + pluginName + '", attempting drop');
         if (activePlugin.module.drop) {
             dropActions = activePlugin.module.drop.apply(null, this.args) || [];
             if (! Array.isArray(dropActions)) {
@@ -58,7 +72,10 @@ Plugger.prototype.load = function(modulePath) {
     var pluginName = path.basename(modulePath, '.js'),
         plugin, connectArgs = this.args,
         loader = this;
-    
+        
+    // drop the existing plugin if it exists
+    loader.drop(pluginName, plugin);
+
     debug('loading plugin "' + pluginName + '" from: ' + modulePath);
     require.cache[modulePath] = undefined;
 
@@ -67,7 +84,7 @@ Plugger.prototype.load = function(modulePath) {
         plugin = require(modulePath);
     }
     catch (e) {
-        // log plugin load error
+        loader.emit('error', e);
     }
     
     if (plugin && plugin.connect) {
@@ -78,27 +95,16 @@ Plugger.prototype.load = function(modulePath) {
         if (haveCallback) {
             // add the callback to the connect args
             connectArgs = this.args.concat(function(pluginData) {
-                // update the active plugins
-                loader.activePlugins[pluginName] = {
-                    data: pluginData,
-                    module: plugin,
-                    path: modulePath
-                };
-
-                // emit the connect event
-                loader.emit('connect', pluginName, pluginData || connectResult || {}, modulePath);
+                loader.activate(pluginName, plugin, modulePath, pluginData || connectResult);
             });
         } 
         
-        // drop the existing plugin if it exists
-        loader.drop(pluginName, plugin);
-
         // call the connect method
         connectResult = plugin.connect.apply(null, connectArgs);
 
         // if we didn't have a callback, then emit the connect event
         if (! haveCallback) {
-            loader.emit('connect', pluginName, connectResult || {}, modulePath);
+            loader.activate(pluginName, plugin, modulePath, connectResult);
         }
     }
 };
