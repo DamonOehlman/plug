@@ -1,15 +1,8 @@
 {
   "name": "plug",
   "description": "Simple plugin system with minimal dependencies",
-  "author": "Damon Oehlman <damon.oehlman@sidelab.com>",
-  "tags": [
-    "plugin"
-  ],
+  "author": "Damon Oehlman <damon.oehlman@gmail.com>",
   "version": "0.1.1",
-  "main": "index.js",
-  "engines": {
-    "node": ">= 0.4.x < 0.9.0"
-  },
   "dependencies": {
     "debug": "*"
   },
@@ -21,5 +14,17 @@
   "bugs": {
     "url": "http://github.com/DamonOehlman/plug/issues"
   },
-  "contributors": []
+  "contributors": [],
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "node test/all.js",
+    "gendocs": "gendocs > README.md"
+  },
+  "keywords": [
+    "plugin"
+  ],
+  "license": "MIT"
 }

@@ -1,6 +1,60 @@
 /* jshint node: true */
 'use strict';
 
+/**
+  # plug
+
+  Plug is a very simple plugin system for Node.js.  It has minimal
+  dependencies and is should make loading plugins a very simple affair.
+
+  ## Design Principles
+
+  - Plugins are node modules that export a `connect` and `drop` function.
+  - Each `Plugger` manages a list of active plugins, which are unique by name.
+  - In the event that a plugin with the same name as an existing plugin is
+    loaded into a Plugger scope, the old plugin is __dropped__ before the
+    new plugin is __connected__.
+
+  ## Plugin Connection
+
+  When a new plugin is found, the `connect` function for the plugin is
+  called with arguments that were passed when a new `Plugger` instance was
+  created.  This sounds a little confusing at first, but makes plug quite
+  powerful.
+
+  In the following example, for instance, a Plugger is created taking a
+  name and age argument:
+
+  <<< examples/simple-loader.js
+
+  When plugins are later connected, these arguments are passed through to
+  the plugin's connect function along with a callback.  The callback is
+  responsible for returning _pluginData_ to the plugger, and all of this
+  information is passed through when a `connect` event is emitted:
+
+  <<< examples/plugins/a/first.js
+
+  Running, the above example yields the following output:
+
+  ```
+  I belong to Bob
+  loaded plugin "first", with data:  { sport: 'Fishing' }
+  ```
+
+  ## Plugin Drop (or Disconnection)
+
+  To be completed.
+
+  ### Using Drop Actions
+
+  To be completed.
+
+  ## Other Node Plugin Systems
+
+  - [haba](https://github.com/crcn/haba)
+  - [broadway](https://github.com/flatiron/broadway)
+**/
+
 var debug = require('debug')('plug');
 var path = require('path');
 var fs = require('fs');
