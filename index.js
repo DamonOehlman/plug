@@ -58,24 +58,27 @@
 var debug = require('debug')('plug');
 var path = require('path');
 var fs = require('fs');
-var events = require('events');
+var EventEmitter = require('events').EventEmitter;
 var util = require('util');
 
-var Plugger = exports.Plugger = function() {
-  if (! (this instanceof Plugger)) {
-    var p = new Plugger();
-    p.apply(p, arguments);
+function Plug() {
+  if (! (this instanceof Plug)) {
+    var p = new Plug();
+    Plug.apply(p, arguments);
 
     return p;
   }
 
+  EventEmitter.call(this);
+
   this.activePlugins = {};
   this.args = Array.prototype.slice.call(arguments, 0);
-}; // PluginLoader
+}
 
-util.inherits(Plugger, events.EventEmitter);
+module.exports = Plug;
+util.inherits(Plug, EventEmitter);
 
-Plugger.prototype.activate = function(pluginName, plugin, modulePath, data) {
+Plug.prototype.activate = function(pluginName, plugin, modulePath, data) {
   // update the active plugins
   this.activePlugins[pluginName] = {
     data: data,
@@ -84,11 +87,11 @@ Plugger.prototype.activate = function(pluginName, plugin, modulePath, data) {
   };
 
   // emit the connect event
-  debug('!! CONNECT: plugin "' + pluginName + '" load fired callback, completed');
+  debug('!! CONNECT: plugin "' + pluginName + '"');
   this.emit('connect', pluginName, data || {}, modulePath);
 };
 
-Plugger.prototype.drop = function(pluginName) {
+Plug.prototype.drop = function(pluginName) {
   var activePlugin = this.activePlugins[pluginName];
   var loader = this;
   var dropActions = [];
@@ -96,7 +99,7 @@ Plugger.prototype.drop = function(pluginName) {
   // if the plugin is already loaded, then drop it
   debug('check if drop required for plugin: ' + pluginName);
   if (activePlugin) {
-    debug('!! DROP: active plugin found for "' + pluginName + '", attempting drop');
+    debug('!! DROP: active plugin found for "' + pluginName + '"');
     if (activePlugin.module.drop) {
       dropActions = activePlugin.module.drop.apply(null, this.args) || [];
       if (! Array.isArray(dropActions)) {
@@ -119,7 +122,7 @@ Plugger.prototype.drop = function(pluginName) {
   }
 };
 
-Plugger.prototype.find = function(pluginPath) {
+Plug.prototype.find = function(pluginPath) {
   var loader = this;
   
   debug('looking for app plugins in: ' + pluginPath);
@@ -130,7 +133,7 @@ Plugger.prototype.find = function(pluginPath) {
   });
 };
 
-Plugger.prototype.load = function(modulePath) {
+Plug.prototype.load = function(modulePath) {
   // grab the base name of the plugin
   var pluginName = path.basename(modulePath, '.js');
   var plugin;
@@ -141,7 +144,6 @@ Plugger.prototype.load = function(modulePath) {
       
   // drop the existing plugin if it exists
   loader.drop(pluginName, plugin);
-
   debug('loading plugin "' + pluginName + '" from: ' + modulePath);
   require.cache[modulePath] = undefined;
 
@@ -156,11 +158,18 @@ Plugger.prototype.load = function(modulePath) {
   if (plugin && plugin.connect) {
     haveCallback = plugin.connect.length > this.args.length;
     
-    // if the function has a callback parameter, then append the callback arg
+    // if the function has a callback parameter
+    // then append the callback arg
     if (haveCallback) {
       // add the callback to the connect args
-      connectArgs = this.args.concat(function(pluginData) {
-        loader.activate(pluginName, plugin, modulePath, pluginData || connectResult);
+      connectArgs = this.args.concat(function(err, pluginData) {
+        // TODO: handle errors
+        loader.activate(
+          pluginName,
+          plugin,
+          modulePath,
+          pluginData || connectResult
+        );
       });
     } 
     

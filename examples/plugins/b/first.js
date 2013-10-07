@@ -1,6 +1,6 @@
 exports.connect = function(name, age, callback) {
 	console.log('I am the property of ' + name);
-	callback({
+	callback(null, {
 		sport: 'Tennis'
 	});
 };
